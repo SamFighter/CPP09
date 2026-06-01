@@ -9,7 +9,7 @@ BitcoinExchange::BitcoinExchange()
 
 BitcoinExchange::BitcoinExchange(const BitcoinExchange &toCopy)
 {
-	*this == toCopy;
+	*this = toCopy;
 	return;
 }
 
@@ -18,7 +18,20 @@ BitcoinExchange::BitcoinExchange(std::string data_csv)
 	loadCSV(data_csv);
 }
 
+BitcoinExchange::~BitcoinExchange()
+{
+	return ;
+}
+
 //=================== Overload
+
+BitcoinExchange		&BitcoinExchange::operator=(const BitcoinExchange &toCopy)
+{
+	if (this == &toCopy)
+		return (*this);
+	this->_data = toCopy._data;
+	return (*this);
+}
 
 //=================== Regex
 
@@ -121,10 +134,10 @@ void	BitcoinExchange::loadCSV(std::string data_csv)
 
 //=================== Public Method
 
-void	searchData(std::string input_csv)
+void	BitcoinExchange::searchData(std::string input_csv)
 {
     std::ifstream	file(input_csv.c_str());
-	std:string		line;
+	std::string		line;
 
 	if (!file.is_open())
 	{
@@ -149,8 +162,8 @@ void	searchData(std::string input_csv)
 			std::cerr << _RED << "Error: bad input => " << line << _END << std::endl;
 			continue ;
 		}
-		size_t pos = line.find(",");
-		double btc = std::strtod(line.substr(pos + 1).c_str(), NULL);
+		size_t pos = line.find("|");
+		double btc = std::strtod(line.substr(pos + 2).c_str(), NULL);
 		if (!checkValue(btc))
 		{
 			if (btc < 0)
@@ -161,9 +174,24 @@ void	searchData(std::string input_csv)
 			else
 			{
 				std::cerr << _RED << "Error: too large a number." << _END << std::endl;
-				continue
+				continue;
 			}
 		}
-//	J'ai besoin de faire un iterateur pour utiliser lower_bound, entrain de chercher a faire ca...
+		std::string date = line.substr(0, 10);
+		std::map<std::string, double>::iterator it = this->_data.lower_bound(date);
+		if (it->first == date)
+			std::cout << _GREEN << date << " => " << btc << " = " << btc * it->second << _END << std::endl;
+		else
+		{
+			if (it == this->_data.begin())
+			{
+				std::cerr << _RED << "Error: Date out of range." << _END << std::endl;
+			}
+			else
+			{
+				it--;
+				std::cout << _GREEN << date << " => " << btc << " = " << btc * it->second << _END << std::endl;
+			}
+		}
 	}
 }

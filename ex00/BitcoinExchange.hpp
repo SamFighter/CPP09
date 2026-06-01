@@ -15,6 +15,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <cstdlib>
+#include <regex.h>
 
 class BitcoinExchange {
 	private:
